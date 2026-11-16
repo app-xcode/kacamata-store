@@ -16,6 +16,7 @@ const fallbackProducts = [
 
 const money = rupiah
 const imageOf = (p) => p.image_url || p.images?.[0] || 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=900'
+const slugOf = (p) => p.slug || p.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const discounted = (p) => Number(p.sale_price ?? p.price) < Number(p.original_price ?? p.price)
 const initialForm = { id: '', name: '', slug: '', description: '', price: '', category: 'Optical', stock: 0, image_url: '', is_active: true }
 
@@ -237,16 +238,46 @@ export default function App() {
   const promoProducts = products.filter(discounted)
   const whatsapp = settings?.whatsapp_number || '6282144733128'
   const promoName = promoProducts[0]?.promotion_name || 'Special Price'
-  return <><Header onAdmin={()=>setAdmin(true)} onHome={()=>{setAdmin(false);window.scrollTo({top:0,behavior:'smooth'})}}/>
+
+  const syncProductFromUrl = () => {
+    const match = window.location.hash.match(/^#produk\/([^/]+)$/)
+    if (!match) { setDetail(null); return }
+    const slug = decodeURIComponent(match[1])
+    const product = products.find(p => slugOf(p) === slug)
+    if (product) setDetail(product)
+  }
+
+  useEffect(() => {
+    syncProductFromUrl()
+    window.addEventListener('hashchange', syncProductFromUrl)
+    window.addEventListener('popstate', syncProductFromUrl)
+    return () => {
+      window.removeEventListener('hashchange', syncProductFromUrl)
+      window.removeEventListener('popstate', syncProductFromUrl)
+    }
+  }, [products])
+
+  const openProduct = (product) => {
+    const url = window.location.pathname + window.location.search + '#produk/' + encodeURIComponent(slugOf(product))
+    window.history.pushState({}, '', url)
+    setDetail(product)
+  }
+
+  const closeProduct = () => {
+    window.history.replaceState({}, '', window.location.pathname + window.location.search)
+    setDetail(null)
+  }
+
+  return <><Header onAdmin={()=>setAdmin(true)} onHome={()=>{setAdmin(false);closeProduct();window.scrollTo({top:0,behavior:'smooth'})}}/>
     <main>
       <section className="hero"><div className="hero-copy"><span className="eyebrow"><Sparkles size={14}/> YOUR EVERYDAY EYEWEAR</span><h1>See the world<br/><em>in your own style.</em></h1><p>Temukan frame yang tepat untuk setiap cerita. Koleksi kacamata pilihan dengan desain modern, nyaman, dan penuh karakter.</p><div className="hero-actions"><a href="#koleksi" className="button button-dark">Jelajahi koleksi <ArrowUpRight size={17}/></a><span className="hero-note"><span className="dot"/> Pilihan gaya untuk setiap hari</span></div><div className="hero-stats"><div><strong>{products.length ? products.length+'+' : '—'}</strong><span>Produk pilihan</span></div><div><strong>100%</strong><span>Style & comfort</span></div><div><strong>Easy</strong><span>Order via WhatsApp</span></div></div></div><div className="hero-visual"><div className="hero-photo"><img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=1200" alt="Koleksi kacamata modern"/></div><div className="floating-note"><span className="note-icon"><Glasses size={19}/></span><span><strong>Find your frame</strong><small>Made for your moments</small></span><ArrowUpRight size={17}/></div><div className="hero-index">01 / 04</div></div><div className="hero-watermark">VISION</div></section>
       <section className="trust-strip"><div><ShieldCheck/><span>Produk pilihan</span></div><div><Sparkles/><span>Style yang timeless</span></div><div><MessageCircle/><span>Pesan mudah via WhatsApp</span></div><div><Package/><span>Update stok berkala</span></div></section>
-      <section className="collection section-wrap" id="koleksi"><div className="section-heading"><div><span className="eyebrow">THE COLLECTION</span><h2>Find your <em>perfect frame.</em></h2><p>Temukan kacamata yang paling cocok dengan karakter Anda.</p></div><span className="collection-count">{visible.length.toString().padStart(2,'0')} ITEMS</span></div><div className="catalog-tools"><div className="category-tabs">{categories.map(c=><button key={c} className={category===c?'selected':''} onClick={()=>setCategory(c)}>{c}</button>)}</div><label className="search-box"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cari kacamata..."/>{search&&<button onClick={()=>setSearch('')}><X size={15}/></button>}</label></div>{loading ? <div className="loading-state"><LoaderCircle className="spin"/> Memuat koleksi...</div> : visible.length ? <div className="product-grid">{visible.map(p=><ProductCard key={p.id} product={p} onOpen={setDetail}/>)}</div> : <div className="empty-state"><Glasses size={30}/><h3>Produk belum ditemukan</h3><p>Coba kata kunci atau kategori lainnya.</p></div>}</section>
+      <section className="collection section-wrap" id="koleksi"><div className="section-heading"><div><span className="eyebrow">THE COLLECTION</span><h2>Find your <em>perfect frame.</em></h2><p>Temukan kacamata yang paling cocok dengan karakter Anda.</p></div><span className="collection-count">{visible.length.toString().padStart(2,'0')} ITEMS</span></div><div className="catalog-tools"><div className="category-tabs">{categories.map(c=><button key={c} className={category===c?'selected':''} onClick={()=>setCategory(c)}>{c}</button>)}</div><label className="search-box"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cari kacamata..."/>{search&&<button onClick={()=>setSearch('')}><X size={15}/></button>}</label></div>{loading ? <div className="loading-state"><LoaderCircle className="spin"/> Memuat koleksi...</div> : visible.length ? <div className="product-grid">{visible.map(p=><ProductCard key={p.id} product={p} onOpen={openProduct}/>)}</div> : <div className="empty-state"><Glasses size={30}/><h3>Produk belum ditemukan</h3><p>Coba kata kunci atau kategori lainnya.</p></div>}</section>
       <section className="promo-section" id="promo"><div className="promo-inner"><div className="promo-copy"><span className="eyebrow"><Tag size={14}/> THE GOOD DEAL</span><h2>A little more<br/><em>style, less price.</em></h2><p>{promoProducts.length ? 'Dapatkan penawaran spesial untuk koleksi pilihan. Jangan lewatkan harga terbaiknya.' : 'Temukan koleksi favorit Anda dan tanyakan penawaran terbaru langsung kepada kami.'}</p><a className="button button-light" href={'https://wa.me/'+whatsapp+'?text='+encodeURIComponent('Halo Kacamata Store, boleh info promo terbaru?')} target="_blank" rel="noreferrer">Tanya promo <ArrowUpRight size={17}/></a></div><div className="promo-art"><div className="promo-circle"><span>UP TO</span><strong>{promoProducts.length ? Math.max(...promoProducts.map(p=>Number(p.discount_percent)||0))+'%' : 'NEW'}</strong><span>OFF SELECTED FRAMES</span></div><div className="promo-caption"><Sparkles size={15}/> {promoName}</div></div></div></section>
       <section className="about-section section-wrap" id="tentang"><div className="about-mark"><Glasses size={42}/><span>SEE<br/>BETTER.</span></div><div className="about-copy"><span className="eyebrow">A CLEARER POINT OF VIEW</span><h2>Good vision.<br/><em>Great expression.</em></h2><p>Kami percaya kacamata bukan hanya tentang melihat lebih jelas, tetapi juga cara mengekspresikan diri. Pilih frame yang membuat Anda nyaman menjadi diri sendiri.</p><a href={'https://wa.me/'+whatsapp} target="_blank" rel="noreferrer" className="text-link">Kenali kami lebih dekat <ArrowUpRight size={16}/></a></div></section>
     </main>
     <footer className="site-footer"><div className="footer-top"><button className="brand" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}><span className="brand-mark"><Glasses/></span>KACAMATA<span className="brand-light">STORE.</span></button><p>See the world in your own style.</p><a className="button button-light" href={'https://wa.me/'+whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={17}/> Hubungi kami</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Kacamata Store. All rights reserved.</span><span>Designed for your everyday vision.</span><button onClick={()=>setAdmin(true)}>Admin access</button></div></footer>
-    {detail && <ProductDetail product={detail} onClose={()=>setDetail(null)} whatsapp={whatsapp}/>}
+    {detail && <ProductDetail product={detail} onClose={closeProduct} whatsapp={whatsapp}/>}
     {admin && <Admin onClose={()=>setAdmin(false)}/>}
     <a className="whatsapp-float" href={'https://wa.me/'+whatsapp+'?text='+encodeURIComponent('Halo Kacamata Store, saya ingin bertanya tentang produk.')} target="_blank" rel="noreferrer" aria-label="Chat WhatsApp"><MessageCircle size={23}/></a>
   </>
