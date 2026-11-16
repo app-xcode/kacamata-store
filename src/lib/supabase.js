@@ -10,7 +10,7 @@ export const rupiah = (value) => new Intl.NumberFormat('id-ID', {
   style: 'currency', currency: 'IDR', maximumFractionDigits: 0,
 }).format(Number(value || 0))
 
-export const whatsappLink = (product) => {
+export const whatsappLink = (product, number = whatsappNumber) => {
   const message = [
     'Halo Kacamata Store, saya tertarik dengan produk:',
     product.name,
@@ -18,5 +18,5 @@ export const whatsappLink = (product) => {
     product.slug ? 'https://app-xcode.github.io/kacamata-store/#produk/' + product.slug : '',
     'Apakah produk ini masih tersedia?'
   ].filter(Boolean).join('\n')
-  return 'https://wa.me/' + whatsappNumber + '?text=' + encodeURIComponent(message)
+  return 'https://wa.me/' + number + '?text=' + encodeURIComponent(message)
 }
