@@ -46,10 +46,10 @@ function ProductCard({ product, onOpen }) {
   </article>
 }
 
-function ProductDetail({ product, onClose }) {
+function ProductDetail({ product, onClose, whatsapp }) {
   if (!product) return null
   const sale = discounted(product)
-  return <div className="modal-backdrop" onMouseDown={onClose}><section className="detail-modal" onMouseDown={e => e.stopPropagation()}><button className="modal-close" onClick={onClose}><X/></button><div className="detail-image"><img src={imageOf(product)} alt={product.name}/></div><div className="detail-copy"><span className="eyebrow">{product.category || 'EYEWEAR'}</span><h2>{product.name}</h2><p>{product.description || 'Desain pilihan untuk menemani aktivitas dan gaya sehari-hari.'}</p><div className="detail-price">{sale && <del>{money(product.original_price ?? product.price)}</del>}<strong>{money(product.sale_price ?? product.price)}</strong></div><p className="availability">{Number(product.stock) > 0 ? '✓ Tersedia · ' + product.stock + ' stok' : 'Stok sedang habis'}</p><a className="button button-dark full-button" href={whatsappLink(product)} target="_blank" rel="noreferrer"><MessageCircle size={18}/> Pesan via WhatsApp <ArrowUpRight size={17}/></a><small>Anda akan diarahkan ke WhatsApp untuk konfirmasi pesanan.</small></div></section></div>
+  return <div className="modal-backdrop" onMouseDown={onClose}><section className="detail-modal" onMouseDown={e => e.stopPropagation()}><button className="modal-close" onClick={onClose}><X/></button><div className="detail-image"><img src={imageOf(product)} alt={product.name}/></div><div className="detail-copy"><span className="eyebrow">{product.category || 'EYEWEAR'}</span><h2>{product.name}</h2><p>{product.description || 'Desain pilihan untuk menemani aktivitas dan gaya sehari-hari.'}</p><div className="detail-price">{sale && <del>{money(product.original_price ?? product.price)}</del>}<strong>{money(product.sale_price ?? product.price)}</strong></div><p className="availability">{Number(product.stock) > 0 ? '✓ Tersedia · ' + product.stock + ' stok' : 'Stok sedang habis'}</p><a className="button button-dark full-button" href={whatsappLink(product, whatsapp)} target="_blank" rel="noreferrer"><MessageCircle size={18}/> Pesan via WhatsApp <ArrowUpRight size={17}/></a><small>Anda akan diarahkan ke WhatsApp untuk konfirmasi pesanan.</small></div></section></div>
 }
 
 function Admin({ onClose }) {
@@ -187,7 +187,7 @@ export default function App() {
       <section className="about-section section-wrap" id="tentang"><div className="about-mark"><Glasses size={42}/><span>SEE<br/>BETTER.</span></div><div className="about-copy"><span className="eyebrow">A CLEARER POINT OF VIEW</span><h2>Good vision.<br/><em>Great expression.</em></h2><p>Kami percaya kacamata bukan hanya tentang melihat lebih jelas, tetapi juga cara mengekspresikan diri. Pilih frame yang membuat Anda nyaman menjadi diri sendiri.</p><a href={'https://wa.me/'+whatsapp} target="_blank" rel="noreferrer" className="text-link">Kenali kami lebih dekat <ArrowUpRight size={16}/></a></div></section>
     </main>
     <footer className="site-footer"><div className="footer-top"><button className="brand" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}><span className="brand-mark"><Glasses/></span>KACAMATA<span className="brand-light">STORE.</span></button><p>See the world in your own style.</p><a className="button button-light" href={'https://wa.me/'+whatsapp} target="_blank" rel="noreferrer"><MessageCircle size={17}/> Hubungi kami</a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Kacamata Store. All rights reserved.</span><span>Designed for your everyday vision.</span><button onClick={()=>setAdmin(true)}>Admin access</button></div></footer>
-    {detail && <ProductDetail product={detail} onClose={()=>setDetail(null)}/>}
+    {detail && <ProductDetail product={detail} onClose={()=>setDetail(null)} whatsapp={whatsapp}/>}
     {admin && <Admin onClose={()=>setAdmin(false)}/>}
     <a className="whatsapp-float" href={'https://wa.me/'+whatsapp+'?text='+encodeURIComponent('Halo Kacamata Store, saya ingin bertanya tentang produk.')} target="_blank" rel="noreferrer" aria-label="Chat WhatsApp"><MessageCircle size={23}/></a>
   </>
