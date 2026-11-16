@@ -133,7 +133,7 @@ function Admin({ onClose }) {
     e.preventDefault(); setBusy(true); setError('')
     try {
       const { id, ...rest } = promoForm
-      const result = await callAdmin('save_promotion', { promotion: { ...rest, discount_value: Number(rest.discount_value), starts_at: rest.starts_at ? new Date(rest.starts_at).toISOString() : null, ends_at: rest.ends_at ? new Date(rest.ends_at).toISOString() : null } })
+      const result = await callAdmin('save_promotion', { promotion: { id, ...rest, discount_value: Number(rest.discount_value), starts_at: rest.starts_at ? new Date(rest.starts_at).toISOString() : null, ends_at: rest.ends_at ? new Date(rest.ends_at).toISOString() : null } })
       const promoId = id || result?.promotion?.id || result?.id
       if (promoId && selected.length) await callAdmin('assign_promotion', { promotion_id: promoId, product_ids: selected })
       await loadAdmin(); setSelected([]); setNotice('Promo berhasil disimpan.')
