@@ -165,6 +165,8 @@ function Admin({ onClose }) {
     if (!confirm('Hapus promo "' + promo.name + '"? Promo ini tidak dapat dikembalikan.')) return
     setBusy(true); setError('')
     try {
+      const { error: linksError } = await supabase.from('product_promotions').delete().eq('promotion_id', promo.id)
+      if (linksError) throw linksError
       const { error: deleteError } = await supabase.from('promotions').delete().eq('id', promo.id)
       if (deleteError) throw deleteError
       await loadAdmin()
