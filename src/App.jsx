@@ -86,7 +86,15 @@ function Admin({ onClose }) {
     if (s.data) setSettings(s.data)
   }
   useEffect(() => {
-    if (session) loadAdmin().catch(e => setError(e.message))
+    if (!session) return
+    loadAdmin().catch(e => setError(e.message))
+    const channel = supabase.channel('admin-live-products')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => loadAdmin().catch(e => setError(e.message)))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'promotions' }, () => loadAdmin().catch(e => setError(e.message)))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'product_promotions' }, () => loadAdmin().catch(e => setError(e.message)))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => loadAdmin().catch(e => setError(e.message)))
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [session])
   useEffect(() => {
     supabase?.auth.getSession().then(({ data }) => { if (data.session) setSession(data.session) })
@@ -203,13 +211,26 @@ export default function App() {
   const [promo, setPromo] = useState(null)
   useEffect(() => {
     if (!supabase) { setProducts(fallbackProducts); setLoading(false); return }
-    Promise.all([
-      supabase.from('product_catalog').select('*').order('created_at', { ascending: false }),
-      supabase.from('store_settings').select('*').limit(1).maybeSingle()
-    ]).then(([p,s]) => {
-      setProducts(p.error ? fallbackProducts : (p.data || []))
+    let active = true
+    const loadCatalog = async () => {
+      const [p,s] = await Promise.all([
+        supabase.from('product_catalog').select('*').order('created_at', { ascending: false }),
+        supabase.from('store_settings').select('*').limit(1).maybeSingle()
+      ])
+      if (!active) return
+      if (p.error) throw p.error
+      setProducts(p.data || [])
       setSettings(s.data || null)
-    }).catch(() => setProducts(fallbackProducts)).finally(() => setLoading(false))
+      setLoading(false)
+    }
+    loadCatalog().catch(() => { if (active) { setProducts(fallbackProducts); setLoading(false) } })
+    const channel = supabase.channel('storefront-live-catalog')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => loadCatalog().catch(console.error))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'promotions' }, () => loadCatalog().catch(console.error))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'product_promotions' }, () => loadCatalog().catch(console.error))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => loadCatalog().catch(console.error))
+      .subscribe()
+    return () => { active = false; supabase.removeChannel(channel) }
   }, [])
   const categories = useMemo(() => ['Semua', ...new Set(products.map(p=>p.category).filter(Boolean))], [products])
   const visible = useMemo(() => products.filter(p => (category==='Semua'||p.category===category) && (p.name+' '+(p.category||'')).toLowerCase().includes(search.toLowerCase())), [products,category,search])
