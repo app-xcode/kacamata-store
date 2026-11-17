@@ -12,7 +12,7 @@ export const rupiah = (value) => new Intl.NumberFormat('id-ID', {
 
 export const productShareUrl = (product) => {
   const slug = product.slug || product.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  return 'https://zcxvnlcmcewabqfovxpy.supabase.co/functions/v1/product-share?slug=' + encodeURIComponent(slug)
+  return 'https://app-xcode.github.io/kacamata-store/#produk/' + encodeURIComponent(slug)
 }
 
 export const whatsappLink = (product, number = whatsappNumber) => {
