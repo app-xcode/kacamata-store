@@ -19,3 +19,13 @@
 .gallery-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#ffffff9c;box-shadow:0 1px 4px #0004}
 .gallery-dots button.active{width:20px;border-radius:5px;background:#fff}
 @media(max-width:600px){.detail-image>img{min-height:240px}.gallery-arrow{width:32px;height:32px}}
+
+
+/* Prevent iOS Safari from zooming when form controls receive focus */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
