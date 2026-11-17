@@ -29,3 +29,100 @@
     font-size: 16px !important;
   }
 }
+
+
+/* Keep form controls and grid/flex children inside their parent */
+.admin-shell,
+.admin-main,
+.admin-grid,
+.admin-panel,
+.admin-form,
+.admin-form > *,
+.admin-form label,
+.login-card,
+.login-card label,
+.image-upload-field,
+.select-products,
+.select-products label {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.admin-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-form > label,
+.admin-form > .wide,
+.admin-form > div {
+  min-width: 0;
+  width: 100%;
+}
+
+.admin-form input:not([type="checkbox"]),
+.admin-form textarea,
+.admin-form select,
+.login-card input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.admin-form input[type="file"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.select-products {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.select-products label {
+  overflow-wrap: anywhere;
+}
+
+.search-box {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.search-box input {
+  flex: 1 1 0%;
+  width: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 850px) {
+  .admin-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-main,
+  .admin-panel {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .admin-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-form .wide,
+  .form-actions.wide {
+    grid-column: 1;
+  }
+
+  .select-products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
